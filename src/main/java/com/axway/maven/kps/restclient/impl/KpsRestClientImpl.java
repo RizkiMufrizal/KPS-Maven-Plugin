@@ -30,7 +30,7 @@ public class KpsRestClientImpl implements KpsRestClient {
 
         if (jsonNodeHttpResponse != null) {
             log.info("url : {}", url);
-            log.info("Header : {}", jsonNodeHttpResponse.getHeaders());
+            log.debug("Header : {}", jsonNodeHttpResponse.getHeaders());
             log.info("Body : {}", jsonNodeHttpResponse.getBody());
             log.info("Http Response : {}", jsonNodeHttpResponse.getStatus());
         }
@@ -57,7 +57,7 @@ public class KpsRestClientImpl implements KpsRestClient {
 
         if (jsonNodeHttpResponse != null) {
             log.info("url : {}", url);
-            log.info("Header : {}", jsonNodeHttpResponse.getHeaders());
+            log.debug("Header : {}", jsonNodeHttpResponse.getHeaders());
             log.info("Body : {}", jsonNodeHttpResponse.getBody());
             log.info("Http Response : {}", jsonNodeHttpResponse.getStatus());
         }
@@ -86,7 +86,7 @@ public class KpsRestClientImpl implements KpsRestClient {
 
         if (jsonNodeHttpResponse != null) {
             log.info("url : {}", url);
-            log.info("Header : {}", jsonNodeHttpResponse.getHeaders());
+            log.debug("Header : {}", jsonNodeHttpResponse.getHeaders());
             log.info("Body : {}", jsonNodeHttpResponse.getBody());
             log.info("Http Response : {}", jsonNodeHttpResponse.getStatus());
         }

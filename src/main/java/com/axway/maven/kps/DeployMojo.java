@@ -146,7 +146,9 @@ public class DeployMojo extends AbstractMojo {
                     log.info("Action Process {}", valueAction);
                     k.remove("action");
 
-                    /* create kps */
+                    /*
+                      Create KPS.
+                     */
                     if (String.valueOf(valueAction).equalsIgnoreCase("INSERT")) {
                         try {
                             this.createKps(urlKps + "/" + valueKps, convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
@@ -154,9 +156,10 @@ public class DeployMojo extends AbstractMojo {
                             throw new RuntimeException(e);
                         }
                     }
-                    /* create kps */
 
-                    /* update kps */
+                    /*
+                     * Update KPS.
+                     */
                     if (String.valueOf(valueAction).equalsIgnoreCase("UPDATE")) {
                         try {
                             this.updateKps(urlKps + "/" + valueKps, convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
@@ -164,9 +167,10 @@ public class DeployMojo extends AbstractMojo {
                             throw new RuntimeException(e);
                         }
                     }
-                    /* update kps */
 
-                    /* delete kps */
+                    /*
+                     * Delete KPS.
+                     */
                     if (String.valueOf(valueAction).equalsIgnoreCase("DELETE")) {
                         try {
                             this.deleteKps(urlKps + "/" + valueKps, asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
@@ -174,7 +178,6 @@ public class DeployMojo extends AbstractMojo {
                             throw new RuntimeException(e);
                         }
                     }
-                    /* delete kps */
                 });
                 log.info("====================================================================");
                 log.info("Result Deployment KPS");

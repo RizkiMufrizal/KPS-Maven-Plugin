@@ -179,10 +179,9 @@ public class DeployMojo extends AbstractMojo {
                 log.info("====================================================================");
                 log.info("Result Deployment KPS");
                 log.info("====================================================================");
-                String[][] data = new String[asciiTable.size()][];
-                for (int j = 0; j < asciiTable.size(); j++) {
-                    data[j] = asciiTable.get(j).toArray(new String[0]);
-                }
+                String[][] data = asciiTable.stream()
+                        .map(ascii -> ascii.toArray(new String[0]))
+                        .toArray(String[][]::new);
                 System.out.println(AsciiTable.getTable(headers, data));
             } else {
                 log.error("Instance Not Found");

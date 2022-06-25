@@ -28,6 +28,8 @@
         <maven-project-info-reports-plugin.version>3.3.0</maven-project-info-reports-plugin.version>
         <jackson.version>2.13.3</jackson.version>
         <lombok.version>1.18.24</lombok.version>
+        <unirest-java.version>3.13.6</unirest-java.version>
+        <asciitable.version>0.3.2</asciitable.version>
     </properties>
 
     <dependencies>
@@ -64,6 +66,16 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>${unirest-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.vandermeer</groupId>
+            <artifactId>asciitable</artifactId>
+            <version>${asciitable.version}</version>
         </dependency>
     </dependencies>
 

@@ -12,7 +12,7 @@ import com.axway.maven.kps.restclient.impl.TopologyRestClientImpl;
 import com.axway.maven.kps.restclient.mapper.Service;
 import com.axway.maven.kps.restclient.mapper.Topology;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import de.vandermeer.asciitable.AsciiTable;
+import com.github.freva.asciitable.AsciiTable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -24,6 +24,7 @@ import org.apache.maven.project.MavenProject;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -130,18 +131,20 @@ public class DeployMojo extends AbstractMojo {
                 File csvFile = readCsvFile.read(mavenProject, fileName);
                 List<Map<?, ?>> csvFileListMap = convert.toMapList(csvFile, csvSeparator);
 
-                AsciiTable asciiTable = new AsciiTable();
-                asciiTable.addRow("No", "Key", "Value", "Action", "Success", "Message");
+                List<List<String>> asciiTable = new ArrayList<>();
+                String[] headers = {"No", "Key", "Value", "Action", "Success", "Message"};
 
                 AtomicReference<Integer> i = new AtomicReference<>(0);
                 csvFileListMap.forEach(k -> {
+                    log.info("====================================================================");
                     i.getAndSet(i.get() + 1);
                     Object keyKps = k.keySet().stream().findFirst().orElse(null);
                     Object valueKps = k.get(keyKps);
                     Object valueAction = k.get("action");
                     Boolean isKpsExist = kpsRestClient.isExistingKps(urlKps + "/" + valueKps);
-                    log.info("KPS with key {} and Value {} is {}", keyKps, valueKps, (isKpsExist ? "Exist" : "Not Exist"));
+                    log.info("KPS with Key {} and Value {} is {}", keyKps, valueKps, (isKpsExist ? "Exist" : "Not Exist"));
                     log.info("Action Process {}", valueAction);
+                    k.remove("action");
 
                     /* create kps */
                     if (String.valueOf(valueAction).equalsIgnoreCase("INSERT")) {
@@ -173,9 +176,17 @@ public class DeployMojo extends AbstractMojo {
                     }
                     /* delete kps */
                 });
-                log.info(asciiTable.render());
+                log.info("====================================================================");
+                log.info("Result Deployment KPS");
+                log.info("====================================================================");
+                String[][] data = new String[asciiTable.size()][];
+                for (int j = 0; j < asciiTable.size(); j++) {
+                    data[j] = asciiTable.get(j).toArray(new String[0]);
+                }
+                System.out.println(AsciiTable.getTable(headers, data));
+            } else {
+                log.error("Instance Not Found");
             }
-            log.error("Instance Not Found");
         } catch (Exception e) {
             throw new MojoExecutionException(e);
         }
@@ -184,50 +195,61 @@ public class DeployMojo extends AbstractMojo {
     /**
      * Create KPS.
      */
-    private void createKps(String url, String body, AsciiTable asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
+    private void createKps(String url, String body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
         if (isKpsExist) {
             log.info("Cannot Create KPS because KPS Is Exist");
-            asciiTable.addRow(i.get(), keyKps, valueKps, false, "KPS Is Exist");
+            addRow(i.get(), keyKps, valueKps, valueAction, false, "KPS Is Exist", asciiTable);
         } else {
             log.info("Create KPS Process");
             Map<String, Object> mapResponseKps = kpsRestClient.createKps(url, body);
-            asciiTable.addRow(i.get(), keyKps, valueKps, mapResponseKps.get("Success"), mapResponseKps.get("Message"));
+            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"), asciiTable);
         }
     }
 
     /**
      * Update KPS.
      */
-    private void updateKps(String url, String body, AsciiTable asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
+    private void updateKps(String url, String body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
         if (isKpsExist) {
             log.info("Delete KPS Process");
             Map<String, Object> mapResponseDeleteKps = kpsRestClient.deleteKps(url);
             if (mapResponseDeleteKps.get("Success").equals(true)) {
                 log.info("Update KPS Process");
                 Map<String, Object> mapResponseKps = kpsRestClient.createKps(url, body);
-                asciiTable.addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"));
+                addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"), asciiTable);
             } else {
                 log.info("Delete KPS Process Failed");
-                asciiTable.addRow(i.get(), keyKps, valueKps, valueAction + "-DELETE", mapResponseDeleteKps.get("Success"), mapResponseDeleteKps.get("Message"));
+                addRow(i.get(), keyKps, valueKps, valueAction + "-DELETE", mapResponseDeleteKps.get("Success"), mapResponseDeleteKps.get("Message"), asciiTable);
             }
         } else {
             log.info("KPS Not Exist, Create KPS Process");
             Map<String, Object> mapResponseKps = kpsRestClient.createKps(url, body);
-            asciiTable.addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"));
+            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"), asciiTable);
         }
     }
 
     /**
      * Delete KPS.
      */
-    private void deleteKps(String url, AsciiTable asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
+    private void deleteKps(String url, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
         if (isKpsExist) {
             log.info("Delete KPS Process");
             Map<String, Object> mapResponseKps = kpsRestClient.deleteKps(url);
-            asciiTable.addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"));
+            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"), asciiTable);
         } else {
             log.info("KPS Not Exist, Delete KPS Process Failed");
-            asciiTable.addRow(i.get(), keyKps, valueKps, false, "KPS Not Exist");
+            addRow(i.get(), keyKps, valueKps, valueAction, false, "KPS Not Exist", asciiTable);
         }
+    }
+
+    private void addRow(Integer i, Object keyKps, Object valueKps, Object valueAction, Object isKpsExist, Object message, List<List<String>> multirows) {
+        List<String> rows = new ArrayList<>();
+        rows.add(String.valueOf(i));
+        rows.add(String.valueOf(keyKps));
+        rows.add(String.valueOf(valueKps));
+        rows.add(String.valueOf(valueAction));
+        rows.add(String.valueOf(isKpsExist));
+        rows.add(String.valueOf(message));
+        multirows.add(rows);
     }
 }

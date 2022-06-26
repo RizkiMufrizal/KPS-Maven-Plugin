@@ -36,8 +36,9 @@ The file name consists of the following parts:
 1. Prefix: V for versioned, and U for undo.
 2. Version: Version with dots or underscores separate as many parts as you like
 3. Separator: __ (two underscores).
-4. Description: Underscores or spaces separate the words
-5. Suffix: .csv
+4. KPS Name (Alias): Table Name or Table Alias Name KPS
+5. Description: Underscores or spaces separate the words
+6. Suffix: .csv
 
 ### Action KPS Migration
 

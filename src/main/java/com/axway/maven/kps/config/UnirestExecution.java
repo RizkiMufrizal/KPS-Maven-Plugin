@@ -23,8 +23,7 @@ public class UnirestExecution {
                             return jacksonObjectMapper.readValue(value, valueType);
                         } catch (Exception e) {
                             log.error("Exception {}", e.getMessage());
-                            e.printStackTrace(new PrintWriter(stringWriter));
-                            log.error("Exception {}", stringWriter);
+                            log.error("Exception {}", new PrintWriter(stringWriter));
                             return null;
                         }
                     }
@@ -34,8 +33,7 @@ public class UnirestExecution {
                             return jacksonObjectMapper.writeValueAsString(value);
                         } catch (Exception e) {
                             log.error("Exception {}", e.getMessage());
-                            e.printStackTrace(new PrintWriter(stringWriter));
-                            log.error("Exception {}", stringWriter);
+                            log.error("Exception {}", new PrintWriter(stringWriter));
                             return null;
                         }
                     }

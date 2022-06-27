@@ -1,6 +1,7 @@
 package com.axway.maven.kps;
 
 import com.axway.maven.kps.config.Constant;
+import com.axway.maven.kps.config.UnirestExecution;
 import com.axway.maven.kps.csv.Convert;
 import com.axway.maven.kps.csv.ReadCsvFile;
 import com.axway.maven.kps.csv.impl.ConvertJsonImpl;
@@ -122,6 +123,7 @@ public class DeployMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
+            UnirestExecution.run();
             String urlTopology = Constant.PROTOCOL + host + ":" + port + Constant.URL_TOPOLOGY;
             Topology topology = topologyRestClient.getTopologies(urlTopology);
             Optional<Service> optionalTopology = topology.getResult().getServices().stream().parallel().filter(t -> t.getName().equals(instance)).findFirst();
@@ -191,6 +193,8 @@ public class DeployMojo extends AbstractMojo {
             }
         } catch (Exception e) {
             throw new MojoExecutionException(e);
+        } finally {
+            UnirestExecution.shutDown();
         }
     }
 

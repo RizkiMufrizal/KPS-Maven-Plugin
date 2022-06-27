@@ -1,0 +1,11 @@
+{
+  "result": {
+    "services": [
+      {
+        "name": "TEST_01",
+        "id": "instance_01",
+        "type": "node"
+      }
+    ]
+  }
+}

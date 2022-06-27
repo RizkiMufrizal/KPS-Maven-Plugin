@@ -123,7 +123,7 @@ public class DeployMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            UnirestExecution.run();
+            UnirestExecution.run(username, password);
             String urlTopology = Constant.PROTOCOL + host + ":" + port + Constant.URL_TOPOLOGY;
             Topology topology = topologyRestClient.getTopologies(urlTopology);
             Optional<Service> optionalTopology = topology.getResult().getServices().stream().parallel().filter(t -> t.getName().equals(instance)).findFirst();

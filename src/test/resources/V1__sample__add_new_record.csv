@@ -2,3 +2,4 @@ no;name;action
 1;sample 1;INSERT
 2;sample 2;UPDATE
 3;sample 3;DELETE
+/v1/api;sample url;INSERT

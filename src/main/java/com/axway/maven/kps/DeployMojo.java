@@ -25,6 +25,9 @@ import org.apache.maven.project.MavenProject;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -143,7 +146,12 @@ public class DeployMojo extends AbstractMojo {
                     Object keyKps = k.keySet().stream().findFirst().orElse(null);
                     Object valueKps = k.get(keyKps);
                     Object valueAction = k.get("action");
-                    Boolean isKpsExist = kpsRestClient.isExistingKps(urlKps + "/" + valueKps);
+                    Boolean isKpsExist;
+                    try {
+                        isKpsExist = kpsRestClient.isExistingKps(urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()));
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException(e);
+                    }
                     log.info("KPS with Key {} and Value {} is {}", keyKps, valueKps, (isKpsExist ? "Exist" : "Not Exist"));
                     log.info("Action Process {}", valueAction);
                     k.remove("action");
@@ -153,8 +161,8 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("INSERT")) {
                         try {
-                            this.createKps(urlKps + "/" + valueKps, convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
-                        } catch (JsonProcessingException e) {
+                            this.createKps(urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                        } catch (JsonProcessingException | UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -164,8 +172,8 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("UPDATE")) {
                         try {
-                            this.updateKps(urlKps + "/" + valueKps, convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
-                        } catch (JsonProcessingException e) {
+                            this.updateKps(urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                        } catch (JsonProcessingException | UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -175,8 +183,8 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("DELETE")) {
                         try {
-                            this.deleteKps(urlKps + "/" + valueKps, asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
-                        } catch (Exception e) {
+                            this.deleteKps(urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                        } catch (UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
                     }

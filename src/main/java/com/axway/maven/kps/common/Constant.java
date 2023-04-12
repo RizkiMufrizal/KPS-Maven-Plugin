@@ -1,4 +1,4 @@
-package com.axway.maven.kps.config;
+package com.axway.maven.kps.common;
 
 public class Constant {
     public static final String PROTOCOL = "https://";

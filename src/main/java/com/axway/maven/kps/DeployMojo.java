@@ -1,23 +1,22 @@
 package com.axway.maven.kps;
 
-import com.axway.maven.kps.config.Constant;
-import com.axway.maven.kps.config.UnirestExecution;
+import com.axway.maven.kps.client.KpsClient;
+import com.axway.maven.kps.client.TopologyClient;
+import com.axway.maven.kps.client.object.response.KPSResult;
+import com.axway.maven.kps.client.object.response.ServiceResponse;
+import com.axway.maven.kps.client.object.response.TopologyResponse;
+import com.axway.maven.kps.client.rest.KpsRestClientImpl;
+import com.axway.maven.kps.client.rest.TopologyRestClientImpl;
+import com.axway.maven.kps.common.Constant;
 import com.axway.maven.kps.csv.Convert;
 import com.axway.maven.kps.csv.ReadCsvFile;
 import com.axway.maven.kps.csv.impl.ConvertJsonImpl;
 import com.axway.maven.kps.csv.impl.ReadCsvFileImpl;
-import com.axway.maven.kps.restclient.KpsRestClient;
-import com.axway.maven.kps.restclient.TopologyRestClient;
-import com.axway.maven.kps.restclient.impl.KpsRestClientImpl;
-import com.axway.maven.kps.restclient.impl.TopologyRestClientImpl;
-import com.axway.maven.kps.restclient.mapper.Service;
-import com.axway.maven.kps.restclient.mapper.Topology;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.freva.asciitable.AsciiTable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -45,15 +44,15 @@ public class DeployMojo extends AbstractMojo {
 
     private final Convert convert;
     private final ReadCsvFile readCsvFile;
-    private final TopologyRestClient topologyRestClient;
-    private final KpsRestClient kpsRestClient;
+    private final TopologyClient topologyClient;
+    private final KpsClient kpsClient;
 
     @Inject
     public DeployMojo(ConvertJsonImpl convertJsonImpl, ReadCsvFileImpl readCsvFileImpl, TopologyRestClientImpl topologyRestClientImpl, KpsRestClientImpl kpsRestClientImpl) {
         this.convert = convertJsonImpl;
         this.readCsvFile = readCsvFileImpl;
-        this.topologyRestClient = topologyRestClientImpl;
-        this.kpsRestClient = kpsRestClientImpl;
+        this.topologyClient = topologyRestClientImpl;
+        this.kpsClient = kpsRestClientImpl;
     }
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -124,12 +123,11 @@ public class DeployMojo extends AbstractMojo {
     private Character csvSeparator;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         try {
-            UnirestExecution.run(username, password);
             String urlTopology = Constant.PROTOCOL + host + ":" + port + Constant.URL_TOPOLOGY;
-            Topology topology = topologyRestClient.getTopologies(urlTopology);
-            Optional<Service> optionalTopology = topology.getResult().getServices().stream().parallel().filter(t -> t.getName().equals(instance)).findFirst();
+            TopologyResponse topologyResponse = topologyClient.getTopologies(username, password, urlTopology);
+            Optional<ServiceResponse> optionalTopology = topologyResponse.getResultResponse().getServiceResponses().stream().parallel().filter(t -> t.getName().equals(instance)).findFirst();
             if (optionalTopology.isPresent()) {
 
                 String urlKps = Constant.PROTOCOL + host + ":" + port + Constant.URL_KPS(optionalTopology.get().getId(), tableName);
@@ -143,16 +141,17 @@ public class DeployMojo extends AbstractMojo {
                 csvFileListMap.forEach(k -> {
                     log.info("====================================================================");
                     i.getAndSet(i.get() + 1);
-                    Object keyKps = k.keySet().stream().findFirst().orElse(null);
+                    Object keyKps = k.keySet().stream().parallel().findFirst().orElse(null);
                     Object valueKps = k.get(keyKps);
                     Object valueAction = k.get("action");
                     Boolean isKpsExist;
                     try {
-                        isKpsExist = kpsRestClient.isExistingKps(urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()));
+                        isKpsExist = kpsClient.isExistingKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()));
                     } catch (UnsupportedEncodingException e) {
                         throw new RuntimeException(e);
                     }
-                    log.info("KPS with Key {} and Value {} is {}", keyKps, valueKps, (isKpsExist ? "Exist" : "Not Exist"));
+                    String resultIsKpsExist = isKpsExist ? "Exist" : "Not Exist";
+                    log.info("KPS with Key {} and Value {} is {}", keyKps, valueKps, resultIsKpsExist);
                     log.info("Action Process {}", valueAction);
                     k.remove("action");
 
@@ -161,7 +160,7 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("INSERT")) {
                         try {
-                            this.createKps(urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                            this.createKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
                         } catch (JsonProcessingException | UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
@@ -172,7 +171,7 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("UPDATE")) {
                         try {
-                            this.updateKps(urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                            this.updateKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
                         } catch (JsonProcessingException | UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
@@ -183,7 +182,7 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("DELETE")) {
                         try {
-                            this.deleteKps(urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                            this.deleteKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
                         } catch (UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
@@ -201,55 +200,53 @@ public class DeployMojo extends AbstractMojo {
             }
         } catch (Exception e) {
             throw new MojoExecutionException(e);
-        } finally {
-            UnirestExecution.shutDown();
         }
     }
 
     /**
      * Create KPS.
      */
-    private void createKps(String url, String body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
+    private void createKps(String username, String password, String url, String body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
         if (isKpsExist) {
             log.info("Cannot Create KPS because KPS Is Exist");
             addRow(i.get(), keyKps, valueKps, valueAction, false, "KPS Is Exist", asciiTable);
         } else {
             log.info("Create KPS Process");
-            Map<String, Object> mapResponseKps = kpsRestClient.createKps(url, body);
-            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"), asciiTable);
+            KPSResult mapResponseKps = kpsClient.createKps(username, password, url, body);
+            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.getSuccess(), mapResponseKps.getMessage(), asciiTable);
         }
     }
 
     /**
      * Update KPS.
      */
-    private void updateKps(String url, String body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
+    private void updateKps(String username, String password, String url, String body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
         if (isKpsExist) {
             log.info("Delete KPS Process");
-            Map<String, Object> mapResponseDeleteKps = kpsRestClient.deleteKps(url);
-            if (mapResponseDeleteKps.get("Success").equals(true)) {
+            KPSResult mapResponseDeleteKps = kpsClient.deleteKps(username, password, url);
+            if (mapResponseDeleteKps.getSuccess()) {
                 log.info("Update KPS Process");
-                Map<String, Object> mapResponseKps = kpsRestClient.createKps(url, body);
-                addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"), asciiTable);
+                KPSResult mapResponseKps = kpsClient.createKps(username, password, url, body);
+                addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.getSuccess(), mapResponseKps.getMessage(), asciiTable);
             } else {
                 log.info("Delete KPS Process Failed");
-                addRow(i.get(), keyKps, valueKps, valueAction + "-DELETE", mapResponseDeleteKps.get("Success"), mapResponseDeleteKps.get("Message"), asciiTable);
+                addRow(i.get(), keyKps, valueKps, valueAction + "-DELETE", mapResponseDeleteKps.getSuccess(), mapResponseDeleteKps.getMessage(), asciiTable);
             }
         } else {
             log.info("KPS Not Exist, Create KPS Process");
-            Map<String, Object> mapResponseKps = kpsRestClient.createKps(url, body);
-            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"), asciiTable);
+            KPSResult mapResponseKps = kpsClient.createKps(username, password, url, body);
+            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.getSuccess(), mapResponseKps.getMessage(), asciiTable);
         }
     }
 
     /**
      * Delete KPS.
      */
-    private void deleteKps(String url, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
+    private void deleteKps(String username, String password, String url, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
         if (isKpsExist) {
             log.info("Delete KPS Process");
-            Map<String, Object> mapResponseKps = kpsRestClient.deleteKps(url);
-            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.get("Success"), mapResponseKps.get("Message"), asciiTable);
+            KPSResult mapResponseKps = kpsClient.deleteKps(username, password, url);
+            addRow(i.get(), keyKps, valueKps, valueAction, mapResponseKps.getSuccess(), mapResponseKps.getMessage(), asciiTable);
         } else {
             log.info("KPS Not Exist, Delete KPS Process Failed");
             addRow(i.get(), keyKps, valueKps, valueAction, false, "KPS Not Exist", asciiTable);

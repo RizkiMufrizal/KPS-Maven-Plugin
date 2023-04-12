@@ -1,26 +1,21 @@
-package com.axway.maven.kps.restclient.mapper;
+package com.axway.maven.kps.client.object.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Service implements Serializable {
+public class TopologyResponse extends HttpStatusResponse implements Serializable {
 
-    @JsonProperty("id")
-    private String id;
-
-    @JsonProperty("name")
-    private String name;
-
-    @JsonProperty("type")
-    private String type;
+    @JsonProperty("result")
+    private ResultResponse resultResponse;
 }
-

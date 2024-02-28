@@ -160,8 +160,8 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("INSERT")) {
                         try {
-                            this.createKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
-                        } catch (JsonProcessingException | UnsupportedEncodingException e) {
+                            this.createKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), k, asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                        } catch (UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -171,8 +171,8 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("UPDATE")) {
                         try {
-                            this.updateKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), convert.toString(k), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
-                        } catch (JsonProcessingException | UnsupportedEncodingException e) {
+                            this.updateKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), k, asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                        } catch (UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -206,7 +206,7 @@ public class DeployMojo extends AbstractMojo {
     /**
      * Create KPS.
      */
-    private void createKps(String username, String password, String url, String body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
+    private void createKps(String username, String password, String url, Object body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
         if (isKpsExist) {
             log.info("Cannot Create KPS because KPS Is Exist");
             addRow(i.get(), keyKps, valueKps, valueAction, false, "KPS Is Exist", asciiTable);
@@ -220,7 +220,7 @@ public class DeployMojo extends AbstractMojo {
     /**
      * Update KPS.
      */
-    private void updateKps(String username, String password, String url, String body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
+    private void updateKps(String username, String password, String url, Object body, List<List<String>> asciiTable, AtomicReference<Integer> i, Object keyKps, Object valueKps, Boolean isKpsExist, Object valueAction) {
         if (isKpsExist) {
             log.info("Delete KPS Process");
             KPSResult mapResponseDeleteKps = kpsClient.deleteKps(username, password, url);

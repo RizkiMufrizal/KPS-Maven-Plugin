@@ -1,38 +1,24 @@
 package com.axway.maven.kps.csv.impl;
 
 import com.axway.maven.kps.csv.Convert;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Slf4j
 class ConvertJsonImplTest {
 
     @Inject
     private Convert convert = new ConvertJsonImpl();
-
-    @Test
-    void testToString() throws JsonProcessingException {
-        Map<String, Object> stringObjectMap = new HashMap<>();
-        stringObjectMap.put("Message", "Success Message");
-        stringObjectMap.put("Sucess", Boolean.TRUE);
-
-        log.info("Convert Object Map {}", stringObjectMap);
-        String mapToJsonString = this.convert.toString(stringObjectMap);
-        assertNotNull(mapToJsonString);
-        assertFalse(mapToJsonString.isEmpty());
-    }
 
     @Test
     void toMapList() throws IOException {

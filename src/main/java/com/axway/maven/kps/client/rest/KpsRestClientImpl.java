@@ -33,7 +33,7 @@ public class KpsRestClientImpl implements KpsClient {
     }
 
     @Override
-    public KPSResult createKps(String username, String password, String url, String body) {
+    public KPSResult createKps(String username, String password, String url, Object body) {
         int connectTimeout = 30000;
         int socketTimeout = 30000;
         Map<String, String> headers = HttpClientHeader.setAuthorization(username, password);

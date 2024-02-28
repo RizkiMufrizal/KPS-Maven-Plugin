@@ -7,6 +7,7 @@ import java.util.Map;
 public class HttpClientHeader {
     public static Map<String, String> setAuthorization(String username, String password) {
         Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
         headers.put("Authorization", "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
         return headers;
     }

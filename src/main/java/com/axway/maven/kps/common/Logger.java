@@ -12,10 +12,4 @@ public class Logger {
         e.printStackTrace(new PrintWriter(stringWriter));
         log.error(message, stringWriter);
     }
-
-    public static void logError(Throwable e, String message) {
-        StringWriter stringWriter = new StringWriter();
-        e.printStackTrace(new PrintWriter(stringWriter));
-        log.error(message, stringWriter);
-    }
 }

@@ -40,7 +40,7 @@
         <slf4j.version>2.0.12</slf4j.version>
         <junit-jupiter-api.version>5.10.2</junit-jupiter-api.version>
         <junit-jupiter-engine.version>5.10.2</junit-jupiter-engine.version>
-        <wiremock.version>3.4.2</wiremock.version>
+        <wiremock-jre8.version>3.0.1</wiremock-jre8.version>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.0.0</maven-failsafe-plugin.version>
     </properties>
@@ -115,9 +115,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wiremock</groupId>
-            <artifactId>wiremock</artifactId>
-            <version>${wiremock.version}</version>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock-jre8</artifactId>
+            <version>${wiremock-jre8.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

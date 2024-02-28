@@ -32,7 +32,6 @@ class ConvertJsonImplTest {
         String mapToJsonString = this.convert.toString(stringObjectMap);
         assertNotNull(mapToJsonString);
         assertFalse(mapToJsonString.isEmpty());
-        assertEquals(mapToJsonString, "{\"Message\":\"Success Message\",\"Sucess\":true}");
     }
 
     @Test

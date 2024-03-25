@@ -8,11 +8,11 @@ import com.axway.maven.kps.client.object.response.TopologyResponse;
 import com.axway.maven.kps.client.rest.KpsRestClientImpl;
 import com.axway.maven.kps.client.rest.TopologyRestClientImpl;
 import com.axway.maven.kps.common.Constant;
+import com.axway.maven.kps.common.URLEncoderCommon;
 import com.axway.maven.kps.csv.Convert;
 import com.axway.maven.kps.csv.ReadCsvFile;
 import com.axway.maven.kps.csv.impl.ConvertJsonImpl;
 import com.axway.maven.kps.csv.impl.ReadCsvFileImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.freva.asciitable.AsciiTable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.plugin.AbstractMojo;
@@ -25,8 +25,6 @@ import org.apache.maven.project.MavenProject;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +144,7 @@ public class DeployMojo extends AbstractMojo {
                     Object valueAction = k.get("action");
                     Boolean isKpsExist;
                     try {
-                        isKpsExist = kpsClient.isExistingKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()));
+                        isKpsExist = kpsClient.isExistingKps(username, password, urlKps + "/" + URLEncoderCommon.toEncodeString(valueKps));
                     } catch (UnsupportedEncodingException e) {
                         throw new RuntimeException(e);
                     }
@@ -160,7 +158,7 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("INSERT")) {
                         try {
-                            this.createKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), k, asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                            this.createKps(username, password, urlKps + "/" + URLEncoderCommon.toEncodeString(valueKps), k, asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
                         } catch (UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
@@ -171,7 +169,7 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("UPDATE")) {
                         try {
-                            this.updateKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), k, asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                            this.updateKps(username, password, urlKps + "/" + URLEncoderCommon.toEncodeString(valueKps), k, asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
                         } catch (UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
@@ -182,7 +180,7 @@ public class DeployMojo extends AbstractMojo {
                      */
                     if (String.valueOf(valueAction).equalsIgnoreCase("DELETE")) {
                         try {
-                            this.deleteKps(username, password, urlKps + "/" + URLEncoder.encode(String.valueOf(valueKps), StandardCharsets.UTF_8.toString()), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
+                            this.deleteKps(username, password, urlKps + "/" + URLEncoderCommon.toEncodeString(valueKps), asciiTable, i, keyKps, valueKps, isKpsExist, valueAction);
                         } catch (UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
                         }
